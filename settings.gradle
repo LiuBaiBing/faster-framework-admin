@@ -1,0 +1,6 @@
+rootProject.name = 'faster-framework-admin'
+
+include 'faster-framework-admin'
+include 'faster-framework-admin-spring-boot-autoconfigure'
+include 'faster-framework-admin-spring-boot-starter'
+

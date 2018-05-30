@@ -1,0 +1,3 @@
+dependencies {
+    compile 'cn.faster.framework:faster-framework-core-spring-boot-starter:1.0-SNAPSHOT'
+}
