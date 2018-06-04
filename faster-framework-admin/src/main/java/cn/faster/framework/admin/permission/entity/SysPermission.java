@@ -20,7 +20,7 @@ public class SysPermission extends BaseEntity implements TreeNode {
     private String name;
     private String code;
     private Long parentId;
-    private Long parentIds;
+    private String parentIds;
     private List<TreeNode> children;
     @Transient
     private Integer isLeaf = 0;
