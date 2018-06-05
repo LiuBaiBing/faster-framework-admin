@@ -3,7 +3,6 @@ package cn.faster.framework.admin.permission.controller;
 import cn.faster.framework.admin.permission.entity.SysPermission;
 import cn.faster.framework.admin.permission.model.request.SysPermissionRequest;
 import cn.faster.framework.admin.permission.service.SysPermissionService;
-import cn.faster.framework.core.validator.Validator;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
@@ -36,8 +35,8 @@ public class SysPermissionController {
      * @return
      */
     @GetMapping("/{permissionId}")
-    public ResponseEntity info(@PathVariable String permissionId) {
-        return ResponseEntity.ok(sysPermissionService.getById(permissionId));
+    public ResponseEntity infoById(@PathVariable Long permissionId) {
+        return ResponseEntity.ok(sysPermissionService.infoById(permissionId));
     }
 
     /**
@@ -50,7 +49,8 @@ public class SysPermissionController {
     public ResponseEntity add(@Validated @RequestBody SysPermissionRequest request) {
         SysPermission insert = new SysPermission();
         BeanUtils.copyProperties(request, insert);
-        return new ResponseEntity<>(sysPermissionService.insert(insert), HttpStatus.CREATED);
+        sysPermissionService.insert(insert);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     /**
@@ -65,7 +65,8 @@ public class SysPermissionController {
         SysPermission update = new SysPermission();
         BeanUtils.copyProperties(request, update);
         update.setId(permissionId);
-        return new ResponseEntity<>(sysPermissionService.update(update), HttpStatus.CREATED);
+        sysPermissionService.update(update);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     /**

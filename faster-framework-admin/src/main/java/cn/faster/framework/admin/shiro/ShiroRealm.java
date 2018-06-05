@@ -1,17 +1,18 @@
 package cn.faster.framework.admin.shiro;
 
-import cn.faster.framework.admin.rolePermission.mapper.SysRolePermissionMapper;
+import cn.faster.framework.admin.permission.entity.SysPermission;
+import cn.faster.framework.admin.permission.service.SysPermissionService;
+import cn.faster.framework.admin.rolePermission.entity.SysRolePermission;
+import cn.faster.framework.admin.rolePermission.service.SysRolePermissionService;
 import cn.faster.framework.admin.user.entity.SysUser;
-import cn.faster.framework.admin.user.mapper.SysUserMapper;
-import cn.faster.framework.admin.userRole.mapper.SysUserRoleMapper;
-import cn.faster.framework.admin.userRole.model.SysUserRoleInfo;
+import cn.faster.framework.admin.user.service.SysUserService;
+import cn.faster.framework.admin.userRole.entity.SysUserRole;
+import cn.faster.framework.admin.userRole.service.SysUserRoleService;
 import cn.faster.framework.core.auth.JwtService;
-import cn.faster.framework.core.exception.model.BasicError;
+import cn.faster.framework.core.exception.model.BasisErrorCode;
 import cn.faster.framework.core.web.context.RequestContext;
 import cn.faster.framework.core.web.context.WebContextFacade;
 import io.jsonwebtoken.Claims;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -32,13 +33,15 @@ import java.util.stream.Collectors;
 @Service
 public class ShiroRealm extends AuthorizingRealm {
     @Autowired
-    private SysUserMapper sysUserMapper;
+    private SysUserService sysUserService;
     @Autowired
     private JwtService jwtService;
     @Autowired
-    private SysUserRoleMapper sysUserRoleMapper;
+    private SysUserRoleService sysUserRoleService;
     @Autowired
-    private SysRolePermissionMapper sysRolePermissionMapper;
+    private SysPermissionService sysPermissionService;
+    @Autowired
+    private SysRolePermissionService sysRolePermissionService;
 
     @Override
     public boolean supports(AuthenticationToken token) {
@@ -56,16 +59,31 @@ public class ShiroRealm extends AuthorizingRealm {
         String jwtToken = (String) super.getAvailablePrincipal(principalCollection);
         Claims claims = jwtService.parseToken(jwtToken);
         if (claims == null) {
-            throw new AuthenticationException(BasicError.TOKEN_INVALID.getDescription());
+            throw new AuthenticationException(BasisErrorCode.TOKEN_INVALID.getDescription());
         }
-        SysUser user = sysUserMapper.selectByPrimaryKey(claims.getAudience());
+        SysUser user = sysUserService.selectById(Long.parseLong(claims.getAudience()));
         SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
         if (user == null) {
             return info;
         }
-        List<SysUserRoleInfo> sysUserRoleInfoList = sysUserRoleMapper.findRolesByUser(user.getId());
-        info.setRoles(sysUserRoleInfoList.stream().map(SysUserRoleInfo::getRoleName).collect(Collectors.toSet()));
-        List<String> permissionCodeList = sysRolePermissionMapper.findPermissionCodeListByRoleIds(sysUserRoleInfoList.stream().map(role -> role.getRoleId().toString()).collect(Collectors.joining(",", "(", ")")));
+        //权限code
+        List<String> permissionCodeList;
+        SysUserRole sysUserRoleQuery = new SysUserRole();
+        sysUserRoleQuery.setUserId(user.getId());
+        List<SysUserRole> sysUserRoleList = sysUserRoleService.list(sysUserRoleQuery);
+        boolean isAdmin = sysUserRoleList.stream().anyMatch(userRole -> userRole.getRoleId() == 0);
+        info.setRoles(sysUserRoleList.stream().map(userRole -> userRole.getRoleId().toString()).collect(Collectors.toSet()));
+        //如果是管理员用户，查询全部权限
+        if (isAdmin) {
+            permissionCodeList = sysPermissionService.selectAll().stream().map(SysPermission::getCode).collect(Collectors.toList());
+        } else {
+            //如果不是管理员用户，查询该用户所有角色id
+            List<Long> roleIds = sysUserRoleList.stream().map(SysUserRole::getRoleId).collect(Collectors.toList());
+            //根据角色id列表查询所有权限id
+            List<Long> permissionIds = sysRolePermissionService.selectByRoleIdList(roleIds).stream().map(SysRolePermission::getPermissionId).collect(Collectors.toList());
+            //根据权限id列表查询所有权限code
+            permissionCodeList = sysPermissionService.selectByIdList(permissionIds).stream().map(SysPermission::getCode).collect(Collectors.toList());
+        }
         info.addStringPermissions(permissionCodeList);
         return info;
     }
@@ -82,13 +100,13 @@ public class ShiroRealm extends AuthorizingRealm {
         try {
             Claims claims = jwtService.parseToken((String) authenticationToken.getCredentials());
             if (claims == null) {
-                throw new AuthenticationException(BasicError.TOKEN_INVALID.getDescription());
+                throw new AuthenticationException(BasisErrorCode.TOKEN_INVALID.getDescription());
             }
             RequestContext requestContext = WebContextFacade.getRequestContext();
             requestContext.setUserId(Long.parseLong(claims.getAudience()));
             WebContextFacade.setRequestContext(requestContext);
         } catch (Exception e) {
-            throw new AuthenticationException(BasicError.TOKEN_INVALID.getDescription());
+            throw new AuthenticationException(BasisErrorCode.TOKEN_INVALID.getDescription());
         }
         return new SimpleAuthenticationInfo(authenticationToken.getPrincipal(), authenticationToken.getCredentials(), getName());
     }
