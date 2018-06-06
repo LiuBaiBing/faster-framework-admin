@@ -3,6 +3,8 @@ package cn.faster.framework.admin.auth.controller;
 import cn.faster.framework.admin.auth.model.LoginReq;
 import cn.faster.framework.admin.auth.service.AuthService;
 import lombok.AllArgsConstructor;
+import org.apache.shiro.authz.annotation.RequiresAuthentication;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
