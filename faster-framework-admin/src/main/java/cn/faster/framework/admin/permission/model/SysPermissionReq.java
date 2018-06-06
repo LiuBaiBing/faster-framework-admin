@@ -1,4 +1,4 @@
-package cn.faster.framework.admin.permission.model.request;
+package cn.faster.framework.admin.permission.model;
 
 import lombok.Data;
 
@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull;
  * @author zhangbowen 2018/6/4 16:12
  */
 @Data
-public class SysPermissionRequest {
+public class SysPermissionReq {
     @NotBlank(message = "请输入权限名称")
     private String name;
     @NotBlank(message = "请输入权限编码")

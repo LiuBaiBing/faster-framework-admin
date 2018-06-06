@@ -61,15 +61,16 @@ public class ShiroRealm extends AuthorizingRealm {
         if (claims == null) {
             throw new AuthenticationException(BasisErrorCode.TOKEN_INVALID.getDescription());
         }
-        SysUser user = sysUserService.selectById(Long.parseLong(claims.getAudience()));
+        SysUser user = sysUserService.infoById(Long.parseLong(claims.getAudience()));
         SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
         if (user == null) {
             return info;
         }
-        //权限code
+
         List<String> permissionCodeList;
         SysUserRole sysUserRoleQuery = new SysUserRole();
         sysUserRoleQuery.setUserId(user.getId());
+        //根据用户id，获取当前用户的角色
         List<SysUserRole> sysUserRoleList = sysUserRoleService.list(sysUserRoleQuery);
         boolean isAdmin = sysUserRoleList.stream().anyMatch(userRole -> userRole.getRoleId() == 0);
         info.setRoles(sysUserRoleList.stream().map(userRole -> userRole.getRoleId().toString()).collect(Collectors.toSet()));

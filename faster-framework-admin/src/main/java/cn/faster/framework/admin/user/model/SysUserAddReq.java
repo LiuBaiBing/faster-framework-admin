@@ -1,4 +1,4 @@
-package cn.faster.framework.admin.user.model.request;
+package cn.faster.framework.admin.user.model;
 
 import lombok.Data;
 
@@ -8,7 +8,7 @@ import javax.validation.constraints.NotBlank;
  * @author zhangbowen 2018/6/5 16:33
  */
 @Data
-public class SysUserRequest {
+public class SysUserAddReq {
     @NotBlank(message = "请输入账号")
     private String account;
     @NotBlank(message = "请输入密码")

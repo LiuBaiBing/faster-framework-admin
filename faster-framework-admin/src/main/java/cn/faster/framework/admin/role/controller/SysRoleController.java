@@ -1,7 +1,7 @@
 package cn.faster.framework.admin.role.controller;
 
 import cn.faster.framework.admin.role.entity.SysRole;
-import cn.faster.framework.admin.role.model.request.SysRoleRequest;
+import cn.faster.framework.admin.role.model.SysRoleReq;
 import cn.faster.framework.admin.role.service.SysRoleService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
@@ -44,7 +44,7 @@ public class SysRoleController {
      * @return
      */
     @PostMapping
-    public ResponseEntity insert(@Validated @RequestBody SysRoleRequest request) {
+    public ResponseEntity insert(@Validated @RequestBody SysRoleReq request) {
         SysRole insert = new SysRole();
         BeanUtils.copyProperties(request, insert);
         sysRoleService.insert(insert);
@@ -59,7 +59,7 @@ public class SysRoleController {
      * @return
      */
     @PutMapping("/{roleId}")
-    public ResponseEntity update(@RequestBody SysRoleRequest request, @PathVariable Long roleId) {
+    public ResponseEntity update(@RequestBody SysRoleReq request, @PathVariable Long roleId) {
         SysRole update = new SysRole();
         BeanUtils.copyProperties(request, update);
         update.setId(roleId);

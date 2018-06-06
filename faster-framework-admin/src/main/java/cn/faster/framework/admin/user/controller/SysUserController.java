@@ -1,7 +1,9 @@
 package cn.faster.framework.admin.user.controller;
 
 import cn.faster.framework.admin.user.entity.SysUser;
-import cn.faster.framework.admin.user.model.request.SysUserRequest;
+import cn.faster.framework.admin.user.model.SysUserAddReq;
+import cn.faster.framework.admin.user.model.SysUserChangePwdReq;
+import cn.faster.framework.admin.user.model.SysUserUpdateReq;
 import cn.faster.framework.admin.user.service.SysUserService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.BeanUtils;
@@ -44,28 +46,27 @@ public class SysUserController {
     /**
      * 添加用户
      *
-     * @param sysUserRequest
+     * @param sysUserAddReq
      * @return
      */
     @PostMapping
-    public ResponseEntity insert(@RequestBody @Validated SysUserRequest sysUserRequest) {
+    public ResponseEntity insert(@RequestBody @Validated SysUserAddReq sysUserAddReq) {
         SysUser sysUser = new SysUser();
-        BeanUtils.copyProperties(sysUserRequest, sysUser);
-        sysUserService.insert(sysUser);
-        return new ResponseEntity(HttpStatus.CREATED);
+        BeanUtils.copyProperties(sysUserAddReq, sysUser);
+        return sysUserService.insert(sysUser);
     }
 
     /**
      * 编辑用户
      *
-     * @param sysUserRequest
+     * @param sysUserUpdateReq
      * @param userId
      * @return
      */
     @PutMapping("/{userId}")
-    public ResponseEntity update(@RequestBody SysUserRequest sysUserRequest, @PathVariable Long userId) {
+    public ResponseEntity update(@RequestBody SysUserUpdateReq sysUserUpdateReq, @PathVariable Long userId) {
         SysUser sysUser = new SysUser();
-        BeanUtils.copyProperties(sysUserRequest, sysUser);
+        BeanUtils.copyProperties(sysUserUpdateReq, sysUser);
         sysUser.setId(userId);
         sysUserService.update(sysUser);
         return new ResponseEntity(HttpStatus.CREATED);
@@ -80,6 +81,30 @@ public class SysUserController {
     @DeleteMapping("/{userId}")
     public ResponseEntity delete(@PathVariable Long userId) {
         sysUserService.deleteById(userId);
+        return new ResponseEntity(HttpStatus.CREATED);
+    }
+
+    /**
+     * 修改密码
+     *
+     * @param sysUserChangePwdReq
+     * @param userId
+     * @return
+     */
+    @PutMapping("/{userId}/password/change")
+    public ResponseEntity changePwd(@RequestBody SysUserChangePwdReq sysUserChangePwdReq, @PathVariable Long userId) {
+        return sysUserService.changePwd(sysUserChangePwdReq, userId);
+    }
+
+    /**
+     * 重置密码
+     *
+     * @param userId
+     * @return
+     */
+    @PutMapping("/{userId}/password/reset")
+    public ResponseEntity resetPassword(@PathVariable Long userId) {
+        sysUserService.resetPassword(userId);
         return new ResponseEntity(HttpStatus.CREATED);
     }
 }

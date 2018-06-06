@@ -1,7 +1,7 @@
 package cn.faster.framework.admin.permission.controller;
 
 import cn.faster.framework.admin.permission.entity.SysPermission;
-import cn.faster.framework.admin.permission.model.request.SysPermissionRequest;
+import cn.faster.framework.admin.permission.model.SysPermissionReq;
 import cn.faster.framework.admin.permission.service.SysPermissionService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.BeanUtils;
@@ -46,7 +46,7 @@ public class SysPermissionController {
      * @return
      */
     @PostMapping
-    public ResponseEntity add(@Validated @RequestBody SysPermissionRequest request) {
+    public ResponseEntity add(@Validated @RequestBody SysPermissionReq request) {
         SysPermission insert = new SysPermission();
         BeanUtils.copyProperties(request, insert);
         sysPermissionService.insert(insert);
@@ -61,7 +61,7 @@ public class SysPermissionController {
      * @return
      */
     @PutMapping("/{permissionId}")
-    public ResponseEntity update(@RequestBody SysPermissionRequest request, @PathVariable Long permissionId) {
+    public ResponseEntity update(@RequestBody SysPermissionReq request, @PathVariable Long permissionId) {
         SysPermission update = new SysPermission();
         BeanUtils.copyProperties(request, update);
         update.setId(permissionId);

@@ -3,10 +3,14 @@ package cn.faster.framework.admin.auth.service;
 import cn.faster.framework.admin.auth.error.LoginError;
 import cn.faster.framework.admin.auth.model.LoginReq;
 import cn.faster.framework.admin.auth.model.LoginRes;
+import cn.faster.framework.admin.permission.mapper.SysPermissionMapper;
+import cn.faster.framework.admin.permission.service.SysPermissionService;
+import cn.faster.framework.admin.shiro.ShiroRealm;
 import cn.faster.framework.admin.user.entity.SysUser;
 import cn.faster.framework.admin.user.mapper.SysUserMapper;
 import cn.faster.framework.core.auth.JwtService;
 import cn.faster.framework.core.exception.model.ErrorResponseEntity;
+import cn.faster.framework.core.utils.Utils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.subject.Subject;
@@ -23,7 +27,11 @@ public class AuthService {
     @Autowired
     private SysUserMapper sysUserMapper;
     @Autowired
+    private SysPermissionService sysPermissionService;
+    @Autowired
     private JwtService jwtService;
+    @Autowired
+    private ShiroRealm shiroRealm;
 
     /**
      * 登录
@@ -38,7 +46,7 @@ public class AuthService {
         if (existUser == null) {
             return ErrorResponseEntity.error(LoginError.USER_NOT_EXIST, HttpStatus.NOT_FOUND);
         }
-        if (!existUser.getPassword().equals(loginReq.getPassword())) {
+        if (!existUser.getPassword().equals(Utils.md5(loginReq.getPassword()))) {
             return ErrorResponseEntity.error(LoginError.PASSWORD_ERROR, HttpStatus.NOT_FOUND);
         }
         LoginRes loginRes = new LoginRes(jwtService.createToken(existUser.getId(), 0));
@@ -55,5 +63,9 @@ public class AuthService {
             }
         });
         return ResponseEntity.ok(loginRes);
+    }
+
+    public Object permissions() {
+        return SecurityUtils.getSubject().getPrincipals();
     }
 }
